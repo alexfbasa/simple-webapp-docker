@@ -16,7 +16,7 @@ spec:
       type: "ImageChange"
   source:
     git:
-      uri: "https://github.com/alexfbasa/simple-webapp-docker.git"
+      uri: "https://github.com/mmumshad/simple-webapp-docker.git"
   strategy:
     type: Docker
     dockerStrategy:
