@@ -1,16 +1,10 @@
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y python python-pip
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-RUN echo "Find me"
+RUN pip3 install --upgrade pip
 
-RUN apt-get -y install python-setuptools && apt-get install -y python-dev -y
-
-
-
-RUN pip install --upgrade pip
-
-RUN pip install flask
+RUN pip3 install flask
 
 COPY app.py /opt/
 
