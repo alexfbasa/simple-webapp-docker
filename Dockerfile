@@ -1,8 +1,9 @@
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y python python-pip
+RUN apt-get update && apt-get install -y python python-pip && \
+    apt-get -y install python-setuptools && apt-get install -y python-dev -y
 
-RUN pip install --upgrade setuptools
+
 
 RUN pip install --upgrade pip
 
