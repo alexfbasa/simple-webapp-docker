@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 
 RUN apt-get update && apt-get install -y python python-pip
 
-RUN ls -la
+RUN echo "Find me"
 
 RUN apt-get -y install python-setuptools && apt-get install -y python-dev -y
 
