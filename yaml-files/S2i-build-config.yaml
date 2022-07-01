@@ -1,7 +1,7 @@
 kind: "BuildConfig"
 apiVersion: "v1"
 metadata:
-  name: "simple-webapp-docker"
+  name: "simple-webapp"
 spec:
   runPolicy: "Serial"
   triggers:
@@ -18,11 +18,11 @@ spec:
     git:
       uri: "https://github.com/alexfbasa/simple-webapp-docker.git"
   strategy:
-    type: Docker
-    dockerStrategy:
+    type: Source
+    sourceStrategy:
       from:
-        kind: "DockerImage"
-        name: "ubuntu:16.04"
+        kind: "ImageStreamTag"
+        name: "python:3.6"
   output:
     to:
     kind: "ImageStreamTag"
