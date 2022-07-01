@@ -1,31 +1,33 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: simple-webapp-docker-v2
+  name: simple-webapp-docker
 spec:
-  output: {}
+  nodeSelector: null
+  output:
     to:
       kind: ImageStreamTag
       name: 'simple-webapp-docker:latest'
-  postCommit: {}
-  resources: {}
   runPolicy: Serial
   source:
     git:
+      ref: master
       uri: 'https://github.com/alexfbasa/simple-webapp-docker.git'
     type: Git
   strategy:
     dockerStrategy:
-      from:
-        kind: DockerImage
-        name: 'ubuntu:16.04'
-    type: Docker
+    type: Source
   triggers:
-    - github:
-        secret: b5e471d57f79f52e
-      type: GitHub
+    - imageChange:
+        lastTriggeredImageID: >-
+          172.30.1.1:5000/openshift/python@sha256:ac50754646f0d37616515fb30467d8743fb12954260ec36c9ecb5a94499447e0
+      type: ImageChange
+    - type: ConfigChange
     - generic:
-        secret: 4be5b473f9985dcf
+        secret: 469eef1c46685f61
       type: Generic
+    - github:
+        secret: b612559ea56fe2f6
+      type: GitHub
 status:
-  lastVersion: 5
+  lastVersion: 1
