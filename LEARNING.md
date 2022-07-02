@@ -158,11 +158,12 @@ Tambem especifica a porta para escutar
 Service Porta
 E a porta para requiscao -- Target Port
 
-Mas essa porta so eh mapeada na comunicacao interna 
+Mas essa porta so eh mapeada na comunicacao interna
 
 Para usuario externo - usa o hostname www.somewebapp.com atraves de uma rota
 
 Rotas:
+
 - Load Balance
 - Seguranca
 - Split Traffic
@@ -170,12 +171,34 @@ Rotas:
 Load Balance
 Source - Tem a certeza o usuario sempre vai acessar o mesmo back-end service pela direcao
 RoundRobin - Cada requisacao e enviada por um caminho diferente, mesmo sendo do mesmo IP e ao mesmo tempo
-leastcoon - Escolhe o caminha mais rapido 
+leastcoon - Escolhe o caminha mais rapido
 
-Segurancao 
+Segurancao
 Prove as definicoes de certificado, tambem definicoes para permitir conexao insegura ou redirect
 Certificados e privados keys
 
-Split Traffic 
+Split Traffic
 Permiti voce dividir o trafego em dois, supondo que voce tem um ambiente A e B.
 ![img.png](images/img8.png)
+
+# Expondo a aplicacao para os Usuario
+Criaremos um Service - como no exemplo [service-conf](yaml-files/new-nginx-service-configuration.yaml)
+
+```yaml service
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-nginx-docker  //nome do container
+spec:
+  selector:
+  ## Pegue o nome do deployment config label em service
+    deploymentconfig: simple-nginx-docker
+  ## IP sera adicionado automaticamente, remova linha a baixo
+  {{{ clusterIP: 172.30.136.123  }}}
+  ## Porta que esta configurado na aplicacao 
+  ports:
+  - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+```
