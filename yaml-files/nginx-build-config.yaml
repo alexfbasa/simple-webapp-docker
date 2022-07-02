@@ -20,6 +20,7 @@ spec:
   strategy:
     type: Docker
     dockerStrategy:
+      dockerfilePath: "nginx/"
       from:
         kind: "DockerImage"
         name: "nginx:1.17.4"

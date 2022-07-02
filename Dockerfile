@@ -1,10 +1,12 @@
-FROM ubuntu:16.04
+FROM nginx:1.17.4
 
-RUN apt-get update && apt-get install -y python3 python3-pip
+EXPOSE 8081
 
-RUN pip3 install flask
+USER root
 
-COPY app.py /opt/
+# support running as arbitrary user which belongs to the root group
+RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx && \
+    addgroup nginx root
 
-ENTRYPOINT FLASK_APP=/opt/app.py flask run --host=0.0.0.0 --port=8080
-
+COPY nginx.conf                 /etc/nginx/
+COPY conf.d/                    /etc/nginx/conf.d/
