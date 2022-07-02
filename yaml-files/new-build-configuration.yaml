@@ -1,12 +1,12 @@
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: simple-webapp-docker
+  name: simple-nginx-docker
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'simple-webapp-docker:latest'
+      name: 'simple-nginx-docker:latest'
   runPolicy: Serial
   source:
     git:
@@ -15,18 +15,22 @@ spec:
     type: Git
   strategy:
     dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: 'nginx:1.12'
+        namespace: openshift
     type: Docker
   triggers:
     - imageChange:
         lastTriggeredImageID: >-
-          172.30.1.1:5000/openshift/python@sha256:ac50754646f0d37616515fb30467d8743fb12954260ec36c9ecb5a94499447e0
+          172.30.1.1:5000/openshift/nginx@sha256:af171c38298e64664a9f999194480ce7e392858e773904df22f7585a1731ad0d
       type: ImageChange
     - type: ConfigChange
     - generic:
-        secret: 469eef1c46685f61
+        secret: bb109528189a9440
       type: Generic
     - github:
-        secret: b612559ea56fe2f6
+        secret: 9b9bc8564ab6eb74
       type: GitHub
 status:
   lastVersion: 1

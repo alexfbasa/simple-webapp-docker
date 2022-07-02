@@ -1,38 +1,7 @@
-apiVersion: v1
-kind: Template
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
 metadata:
-  name: ${NGINX}
-  labels:
-    app: ${NGINX}
-    template: ${NGINX}
-  annotations:
-    iconClass: icon-nginx
-    template.openshift.io/bindable: "true"
-    openshift.io/provider-display-name: "Kuehne + Nagel"
-
-parameters:
-  - name: NGINX
-    value: nginx
-    description: The name of auth-proxy deployment
-  - name: REPLICAS
-    description: Number of replicas on the cluster
-    value: "1"
-  - name: PROJECT_NAME
-    description: The project name, by default we defined Development
-    value: cp-401345
-  - name: CONTAINER_REGISTRY
-    value: docker-registry.default.svc:5000
-  - name: IMAGE_TAG
-    value: latest
-  - name: REQUESTED_MEMORY
-    value: 50Mi
-  - name: REQUESTED_CPU
-    value: 2m
-  - name: LIMITED_MEMORY
-    value: 256Mi
-  - name: LIMITED_CPU
-    value: "1"
-
+  name: simple-nginx-docker
 objects:
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
