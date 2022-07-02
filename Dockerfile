@@ -8,5 +8,5 @@ USER root
 RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx && \
     addgroup nginx root
 
-COPY nginx.conf                 /etc/nginx/
-COPY conf.d/                    /etc/nginx/conf.d/
+COPY /ngnix/nginx.conf                 /etc/nginx/
+COPY /ngnix/conf.d/                    /etc/nginx/conf.d/
