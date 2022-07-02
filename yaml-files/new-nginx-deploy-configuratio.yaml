@@ -1,16 +1,16 @@
 kind: "DeploymentConfig"
 apiVersion: "v1"
 metadata:
-  name: "simple-webapp-docker"
+  name: "simple-nginx-docker"
 spec:
   template:
     metadata:
       labels:
-        name: "simple-webapp-docker"
+        name: "simple-nginx-docker"
     spec:
       containers:
-        - name: "simple-webapp-docker"
-          image: "simple-webapp-docker:latest"
+        - name: "simple-nginx-docker"
+          image: "simple-nginx-docker"
           ports:
             - containerPort: 8080
               protocol: "TCP"
@@ -21,10 +21,10 @@ spec:
       imageChangeParams:
         automatic: true
         containerNames:
-          - "simple-webapp-docker"
+          - "simple-nginx-docker"
         from:
           kind: "ImageStreamTag"
-          name: "simple-webapp-docker:latest"
+          name: "simple-nginx-docker:latest"
   strategy:
     type: "Rolling"
   paused: false

@@ -15,10 +15,6 @@ spec:
     type: Git
   strategy:
     dockerStrategy:
-      from:
-        kind: ImageStreamTag
-        name: 'nginx:1.12'
-        namespace: openshift
     type: Docker
   triggers:
     - imageChange:
