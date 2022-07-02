@@ -3,7 +3,6 @@ kind: BuildConfig
 metadata:
   name: simple-webapp-docker
 spec:
-  nodeSelector: null
   output:
     to:
       kind: ImageStreamTag
@@ -16,7 +15,7 @@ spec:
     type: Git
   strategy:
     dockerStrategy:
-    type: Source
+    type: Docker
   triggers:
     - imageChange:
         lastTriggeredImageID: >-
