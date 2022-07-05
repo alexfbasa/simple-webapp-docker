@@ -1,10 +1,110 @@
 # About okd
 
-conectar no console by token
-curl -k https://192.168.99.118:8443/oapi/v1/projects -H "Authorization: Bearer
-kUG4As0n7mTx8yls9gQfR8tZUVqPgV8ny_Yy6_j3uYY"
+Openshift templates example
 
+https://github.com/openshift/origin/tree/master/examples
+
+conectar no console by token
+
+## Common commands
+
+oc status
+
+# Get Pod Documentation
+
+# Get built-in documentation for Pods
+
+oc explain pod
+
+# Get details on the pod's spec
+
+oc explain pod.spec
+
+# Get details on the pod's containers
+
+oc explain pod.spec.containers
+
+# Creating Pods from files
+
+# Create a Pod on OpenShift based on a file
+
+cd labs/
+oc create -f pods/pod.yaml
+oc get pods // checar pods rodando
+oc rhs hello-world-po // Acesso shell a pod
+[pod_heello_world](images/img9.png)
+
+# Show all currently running Pods
+
+oc get pods
+
+# Watch live updates to pods
+
+oc get pods --watch
+
+# Port forwarding for Pods
+
+# Open a local port that forwards traffic to a pod
+
+oc port-forward <pod name> <local port>:<pod port>
+
+# Example of 8080 to 8080 for hello world
+
+oc port-forward hello-world-pod 8080:8080
+
+# Shell into Pods
+
+# oc rsh will work with any Pod name from oc get pods
+
+oc rsh <pod name>
+
+# In the shell, check the API on port 8080
+
+wget localhost:8080
+
+# Exit the rsh session
+
+exit
+
+# Watch live updates to pods
+
+oc get pods --watch
+
+# Delete (stop) Pods
+
+# Delete any OpenShift resource
+
+oc delete <resource type> <resource name>
+
+# Delete the pod for this section
+
+oc delete pod hello-world-pod
+
+Login
+
+```commandline
 oc login -u system:admin
+curl -k https://192.168.99.118:8443/oapi/v1/projects -H "Authorization: Bearer
+{{TOKEN}}}}"
+```
+
+oc new-project
+oc new-app
+oc
+
+# Get built-in documentation for Pods
+
+oc explain pod
+
+# Get details on the pod's spec
+
+oc explain pod.spec
+
+# Get details on the pod's containers
+
+oc explain pod.spec.containers
+
+# You can use this oc explain command to get info about any of the other fields in a Pod
 
 Esse usuario nao tem permissao no console, ele nao loga
 Para criar um usuario adm, voce tem que logar no console web do Openshift com esse usuario
@@ -25,6 +125,64 @@ Saida = clusterrole.rbac.authorization.k8s.io/cluster-admin added: "admin"
 '''
 
 # Criar uma configuracao de build
+
+## Deploymentconfig
+Define um template para uma pod e gerencia o deploymente de novas imagens ou mudancas de configuracoes.
+Uma simples configuracao de deploymente eh normalmente uma analogia a um micro-service.
+Pode suportar muitos diferente deploymentes, completa reinicializacao, customizacao de rolling updates,
+and completa customizacao de comportamento e tambem pre and post deploymente hooks.
+Um deploymente eh engatilhado quando uma configuracao, tag ou ImageStream eh mudada.
+
+### Criar um deployment config vindo de uma inagem
+#### Deploy an existing image based on its tag
+oc new-app <image tag>
+
+#### Criando o template
+oc new-app quay.io/practicalopenshift/hello-world
+
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
+
+Criando um template nomeado 
+Set the name using the --name flag
+
+oc new-app <image tag> --name <desired name>
+
+oc new-app quay.io/practicalopenshift/hello-world --name demo-app
+
+The specifier will match your desired name (dc/demo-app in this case)
+
+oc describe dc/demo-app
+
+Agora para rodar essa nova configuracao
+
+oc new-app quay.io/practicalopenshift/hello-world --name demo-app --as-deployment-config
+oc new-app quay.io/practicalopenshift/hello-world --name demo-app2 --as-deployment-config
+
+[dois_deployments](/images/img12.png)
+
+oc delete all -l app=name demo-app
+##### Check running resources
+oc status
+[status_container](/images/img11.png)
+##### Check pods
+oc get pods
+[image_pod](/images/img10.png)
+
+oc get svc - service
+oc get dc - deploymente config
+oc get istag - ImageStream tag
+
+Para apagar tem que usar o comando completo 
+
+oc delete svc/hello-world - servico
+oc delete dc/hello-world
+oc delete istag/hello-world
+
+oc describe dc/hello-world
+
+Apagando tudo
+
+oc delete all -l app=hello-world 
 
 Primeiro tem que criar a configuracao de build.
 A build construira a imagem e carregara o codigo dentro da imagem
@@ -182,6 +340,7 @@ Permiti voce dividir o trafego em dois, supondo que voce tem um ambiente A e B.
 ![img.png](images/img8.png)
 
 # Expondo a aplicacao para os Usuario
+
 Criaremos um Service - como no exemplo [service-conf](yaml-files/new-nginx-service-configuration.yaml)
 
 ```yaml service
@@ -198,7 +357,35 @@ spec:
   ## Porta que esta configurado na aplicacao 
   ports:
   - name: 8080-tcp
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
 ```
+
+Copie e cole criando um novo servico.
+Lembre-se que isso eh acesso interno.
+Na tela de Service da nova aplicacao, crie uma nota rota no Link.
+
+Se deixar o nome em branco o proprio cluster criara um nome.
+Nessa parte seria aonde voce colocaria seu DNS configurado externamente.
+Aqui sao as configuracao de redirects, podem ser fonecidas por um YAML
+
+Conceito muito importante que eh sobre multiplas PODS, mesmo com varias PODS a mesma instancia
+
+ROUTE -> STICK - checar configuracao
+
+Por padrao Openshift implemente seu balanceamento.
+Para alterar isso:
+Routes - Aplicacao - Action - Edit YAML:
+
+adicione=
+
+```yaml
+...
+metadata:
+  annotations:
+    haproxy.router.openshift.io/balance: roundrobin
+    haproxy.router.openshift.io/disable_cookies: 'true'
+
+```
+

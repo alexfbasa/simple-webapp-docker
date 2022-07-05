@@ -7,6 +7,6 @@ spec:
     deploymentconfig: simple-nginx-docker
   ports:
   - name: 8080-tcp
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
