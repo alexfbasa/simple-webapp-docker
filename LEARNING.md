@@ -161,6 +161,8 @@ oc new-app quay.io/practicalopenshift/hello-world --name demo-app2 --as-deployme
 [dois_deployments](/images/img12.png)
 
 oc delete all -l app=name demo-app
+
+
 ##### Check running resources
 oc status
 [status_container](/images/img11.png)
