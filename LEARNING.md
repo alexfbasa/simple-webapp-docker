@@ -26,45 +26,122 @@ oc explain pod.spec.containers
 
 # Creating Pods from files
 
-# Create a Pod on OpenShift based on a file
+Create a Pod on OpenShift based on a file
 
+```commandline
 cd labs/
 oc create -f pods/pod.yaml
 oc get pods // checar pods rodando
 oc rhs hello-world-po // Acesso shell a pod
+```
+
 [pod_heello_world](images/img9.png)
 
-# Show all currently running Pods
+Show all currently running Pods
 
 oc get pods
 
-# Watch live updates to pods
+Watch live updates to pods
 
 oc get pods --watch
 
-# Port forwarding for Pods
+## Port forwarding for Pods
 
-# Open a local port that forwards traffic to a pod
+Open a local port that forwards traffic to a pod
 
 oc port-forward <pod name> <local port>:<pod port>
 
-# Example of 8080 to 8080 for hello world
+Example of 8080 to 8080 for hello world
+Crie duas pods:
 
-oc port-forward hello-world-pod 8080:8080
+oc create -f pods/pod.yaml && oc create -f pods/pod2.yaml
 
-# Shell into Pods
+Create a pod based on a file (just like the Pods section)
+oc create -f pods/pod.yaml
 
-# oc rsh will work with any Pod name from oc get pods
+## Services - Create a service for the pod
 
-oc rsh <pod name>
+## Isso ira expor o servico para conexao entre as pods
+
+oc expose --port 8080 pod/hello-world-pod
+
+Check that the service and pod are connected properly
+oc status
+
+Create another pod
+oc create -f pods/pod2.yaml
+
+Shell into the second pod
+oc rsh hello-world-pod-2
+
+Get the service IP and Port
+oc status - Para mostrar enderecos de IP e Portas internas
+
+In the shell, you can make a request to the service (because you are inside the OpenShift cluster)
+wget -qO- <service IP / Port>
+
+env - Mostrar as variaveis de uma POD
+wget -qO- $VARIABLE
+
+Use the environment variables with wget
+wget -qO- $HELLO_WORLD_POD_PORT_8080_TCP_ADDR:$HELLO_WORLD_POD_PORT_8080_TCP_PORT
+
+svc/hello-world-pod - 172.30.215.212:8080
+svc/hello-world-pod-2 - 172.30.133.110:8080
+
+Shell into Pods
+oc rsh will work with any Pod name from oc get pods
+
+oc rsh <pod name> {{pod - com porta exposta}}
 
 # In the shell, check the API on port 8080
 
 wget localhost:8080
 
-# Exit the rsh session
+# Exposing a Route
 
-exit
+Para criar suas proprias entrandas para exposicao externa suas aplicacoes
+
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
+oc status
+
+```text
+svc/hello-world - 172.30.217.68:8080
+  dc/hello-world deploys istag/hello-world:latest
+    deployment #1 running for 6 seconds - 1 pod
+```
+
+oc expose svc/hello-world
+
+```text
+route.route.openshift.io/hello-world exposed
+```
+
+oc status
+
+```text
+http://hello-world-myproject.192.168.99.123.nip.io to pod port 8080-tcp (svc/hello-world)
+dc/hello-world deploys istag/hello-world:latest
+deployment #1 deployed 3 minutes ago - 1 pod
+```
+
+```text
+$ curl http://hello-world-myproject.192.168.99.123.nip.io
+Welcome! You can change this message by editing the MESSAGE environment variable.
+```
+
+## Para pegar o arquivo YAML
+
+oc get -o yaml route
+
+"" Usar para pegar as rotas do servidor ""
+```text
+  spec:
+    host: hello-world-myproject.192.168.99.123.nip.io  -- DNS Externo
+    port:
+```
+oc get -o yaml service
+oc get -o yaml pod/hello-world-pod
 
 # Watch live updates to pods
 
@@ -127,6 +204,7 @@ Saida = clusterrole.rbac.authorization.k8s.io/cluster-admin added: "admin"
 # Criar uma configuracao de build
 
 ## Deploymentconfig
+
 Define um template para uma pod e gerencia o deploymente de novas imagens ou mudancas de configuracoes.
 Uma simples configuracao de deploymente eh normalmente uma analogia a um micro-service.
 Pode suportar muitos diferente deploymentes, completa reinicializacao, customizacao de rolling updates,
@@ -134,15 +212,18 @@ and completa customizacao de comportamento e tambem pre and post deploymente hoo
 Um deploymente eh engatilhado quando uma configuracao, tag ou ImageStream eh mudada.
 
 ### Criar um deployment config vindo de uma inagem
+
 #### Deploy an existing image based on its tag
+
 oc new-app <image tag>
 
 #### Criando o template
+
 oc new-app quay.io/practicalopenshift/hello-world
 
 oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
 
-Criando um template nomeado 
+Criando um template nomeado
 Set the name using the --name flag
 
 oc new-app <image tag> --name <desired name>
@@ -162,11 +243,49 @@ oc new-app quay.io/practicalopenshift/hello-world --name demo-app2 --as-deployme
 
 oc delete all -l app=name demo-app
 
+Rodando container direto repositorio
+
+# Deploy from Git using oc new-app
+
+oc new-app <git repo URL>
+
+# For this lesson
+
+oc new-app https://gitlab.com/practical-openshift/hello-world.git --as-deployment-config
+
+# Follow build progress
+
+oc logs -f bc/hello-world -- bc = build config -- mostrar os logs da construcao da imagem
+
+# Check status and pods
+
+oc status
+oc get pods
+
+oc get -o yaml dc/hello-world - Checar o YAML da pod
+
+oc get rc -- checar replica das pods
+
+## Rollou and Roolback version das aplicacoes
+
+oc new-app quay.io/practicalopenshift/hello-world -- iniciar a pod
+oc get pods --watch -- para monitorar
+
+# Roll out the latest version of the application
+
+oc rollout latest dc/hello-world
+
+# Roll back to the previous version of the application
+
+oc rollback dc/hello-world
 
 ##### Check running resources
+
 oc status
 [status_container](/images/img11.png)
+
 ##### Check pods
+
 oc get pods
 [image_pod](/images/img10.png)
 
@@ -174,7 +293,7 @@ oc get svc - service
 oc get dc - deploymente config
 oc get istag - ImageStream tag
 
-Para apagar tem que usar o comando completo 
+Para apagar tem que usar o comando completo
 
 oc delete svc/hello-world - servico
 oc delete dc/hello-world
@@ -184,7 +303,13 @@ oc describe dc/hello-world
 
 Apagando tudo
 
-oc delete all -l app=hello-world 
+oc delete all -l app=hello-world
+
+## Services
+
+criar pod atraves de arquivo
+oc create -f pod.yaml
+oc expose --port 8080 pod/hello-world-pod
 
 Primeiro tem que criar a configuracao de build.
 A build construira a imagem e carregara o codigo dentro da imagem
