@@ -516,3 +516,285 @@ metadata:
 
 ```
 
+## ConfigMap
+Quando voce deploy sua aplicacao em diferente ambientes 
+Para ambiente local voce deveria usar
+```text
+                 Environments
+                    Development     Production
+REST API SERVER     localhost       example-api.com
+Database            locahost        db-host.internal.com
+```
+
+Creating ConfigMaps
+
+Create a ConfigMap using literal command line arguments
+oc create configmap message-map --from-literal MESSAGE="Hello From configMap"
+oc get configmap  -- mostra o config map criado
+oc get -o yaml cm/message-map
+```text
+apiVersion: v1
+data:
+  MESSAGE: Hello From configMap
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2022-07-06T10:23:37Z"
+  name: message-map
+  namespace: myproject
+  resourceVersion: "31499"
+  selfLink: /api/v1/namespaces/myproject/configmaps/message-map
+  uid: b2ccc62d-fd15-11ec-9ac2-0800277dfd8f
+```
+
+oc create configmap <configmap-name> --from-literal KEY="VALUE"
+
+Create from a file
+oc create configmap <configmap-name> --from-file=MESSAGE.txt
+
+Verify
+oc get -o yaml configmap/<configmap-name>
+
+
+Create from a file with a key override
+oc create configmap <configmap-name> --from-file=MESSAGE=MESSAGE.txt
+
+Same --from-file but with a directory
+oc create configmap <configmap-name> --from-file pods
+
+Consuming ConfigMaps as Environment Variables
+
+Set environment variables (same for all types of ConfigMap)
+oc set env dc/hello-world --from cm/<configmap-name>
+oc set env dc/hello-world --from cm/message-map
+curl http://hello-world-myproject.192.168.99.123.nip.io
+Hello From configMap
+
+oc get -o yaml dc/hello-world  // pegar o deployment configuratio
+```text
+  - env:
+        - name: MESSAGE
+          valueFrom:
+            configMapKeyRef: 
+              key: MESSAGE
+              name: message-map  --> Qual o configmap usado
+
+```
+```commandline
+echo "Hello from configMap file" > MESSAGE.txt
+oc create configmap file-map --from-file=MESSAGE.txt
+configmap/file-map created
+oc get -o yaml configmap/file-map
+```
+```text
+apiVersion: v1                                              
+data:                                                       
+  MESSAGE.txt: |                --> WRONG KEY VALUE                                        
+    Hello from configMap file   --> MESSAGE                            
+kind: ConfigMap                                             
+metadata:                                                   
+  creationTimestamp: "2022-07-06T22:08:04Z"                 
+  name: file-map                                            
+  namespace: myproject                                      
+  resourceVersion: "201819"                                 
+  selfLink: /api/v1/namespaces/myproject/configmaps/file-map
+  uid: 1bd72e17-fd78-11ec-9ac2-0800277dfd8f  
+```
+```commandline
+oc create configmap file-map-2 --from-file=MESSAGE=MESSAGE.txt
+```
+```text
+apiVersion: v1
+data:
+  MESSAGE: |                    --> RIGHT KEY VALUE
+    Hello from configMap file
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2022-07-06T22:12:14Z"
+  name: file-map-2
+  namespace: myproject
+  resourceVersion: "202825"
+  selfLink: /api/v1/namespaces/myproject/configmaps/file-map-2
+  uid: b09e2aa2-fd78-11ec-9ac2-0800277dfd8f
+
+```
+```commandline
+oc set env dc/hello-world --from cm/file-map-2
+oc status  --> Pegar endereco da rota e acessar a pagina
+```
+Criando configmap por diretorio 
+
+```commandline
+cd labs
+oc create configmap pods-example --from-file pods  --> todos os arquivo yaml de config e cria um map
+oc get -o yaml configmap/pods-example
+```
+
+## Secrets
+Armazenar privada informacoes
+- Credenciais
+- Certificados
+- Keys
+- Informacao de autenticacao
+- Autorizacao
+- Seguraca
+
+Creating Secrets
+
+Create a simple generic (Opaque) Secret
+oc create secret generic <secret-name> --from-literal KEY="VALUE"
+
+Check the Secret
+oc get -o yaml secret/<secret-name>
+
+
+Consume the Secret as Environment Variables
+
+Almost the same as ConfigMaps
+oc set env dc/<dc-name> --from secret/<secret-name>
+
+Create a simple generic (Opaque) secret
+oc create secret generic message-secret --from-literal MESSAGE="Secret Message"
+
+Check the existing Secrets
+oc get secret
+
+Check our new Secret
+oc get -o yaml secret/message-secret
+
+
+oc create: ConfigMap vs. Secret
+```text
+                      Kind                      Name
+ConfigMap = oc create configmap                 message-map --from-literal MESSAGE="Hello From ConfigMap"
+                      Kind   Type of Secret     Name
+Secret    = oc create secret    generic         message-secret --from-literal MESSAGE="Secret Text"
+```
+```commandline
+oc get -o yaml secret/message-secret
+```
+```text
+apiVersion: v1
+data:
+  MESSAGE: U2VjcmV0IFRleHQ=
+kind: Secret
+metadata:
+  creationTimestamp: "2022-07-06T23:29:25Z"
+  name: message-secret
+  namespace: myproject
+  resourceVersion: "221541"
+  selfLink: /api/v1/namespaces/myproject/secrets/message-secret
+  uid: 795006af-fd83-11ec-9ac2-0800277dfd8f
+type: Opaque
+```
+
+## ImageStreams
+
+List ImageStreams
+oc get is
+
+Delete ImageStreams
+oc delete is/hello-world
+
+Create ImageStreams
+
+Create the ImageStream (but don't deploy yet)
+oc import-image --confirm <image tag>
+
+Example with this course's image
+oc import-image --confirm quay.io/practicalopenshift/hello-world
+
+Importing any new images
+oc import-image --confirm quay.io/practicalopenshift/hello-world
+
+
+Importing extra ImageStreamTags for an existing ImageStream
+
+oc tag syntax
+oc tag <original> <destination>
+
+Example
+oc tag quay.io/image-name:tag image-name:tag
+
+Check the current ImageStreams and ImageStreamTags
+
+List tags
+oc get istag
+
+
+Use the ImageStream with oc new-app
+
+Deploy an application based on your new ImageStream
+oc new-app myproject/hello-world
+
+oc tag syntax
+oc tag <original> <destination>
+
+Example
+oc tag quay.io/image-name:tag image-name:tag
+
+This lesson
+oc tag quay.io/practicalopenshift/hello-world:update-message hello-world:update-message
+
+Check your ImageStreams
+oc get is
+
+Check your ImageStreamTags
+oc get istag
+
+## Importando imagens privadas para o projeto
+echo $REGISTRY_USERNAME
+source credentials.env  --> popular as variaveis
+
+Remote Tag syntax
+<host name>/<your username>/<image name>
+
+Load environment variables from credentials.env
+source credentials.env
+
+Building an image with a remote tag
+docker build -t quay.io/$REGISTRY_USERNAME/private-repo .
+
+Enviando a imagem para o repositorio 
+Log into a registry
+docker login <hostname>
+
+Log into quay.io
+docker login quay.io
+
+Push (send) an image to a remote registry
+docker push <remote tag>
+
+Push the image to Quay
+docker push quay.io/$REGISTRY_USERNAME/private-repo
+
+The command to import the private image (won't work without extra auth steps)
+oc new-app quay.io/$REGISTRY_USERNAME/private-repo
+
+You may need to run this command
+source credentials.env
+
+Create a Docker registry secret
+oc secrets link default demo-image-pull-secret --for=pull   --> First  Maybe
+
+oc describe serviceaccount/default
+
+The same image from the start should work now
+oc new-app quay.io/$REGISTRY_USERNAME/private-repo
+
+oc create secret docker-registry \
+demo-image-pull-secret \
+--docker-server=$REGISTRY_HOST \
+--docker-username=$REGISTRY_USERNAME \
+--docker-password=$REGISTRY_PASSWORD \
+--docker-email=$REGISTRY_EMAIL
+
+A touch of secrets magic
+This command links the secret to the service account named "default"
+oc secrets link default demo-image-pull-secret --for=pull
+
+Check that the service account has the secret associated
+oc describe serviceaccount/default
+
+
+
+
