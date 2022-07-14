@@ -6,6 +6,19 @@ https://github.com/openshift/origin/tree/master/examples
 
 conectar no console by token
 
+Openshift uses Projects
+
+oc project - check with project you are using
+oc new-project myproject - to create a new project
+oc project otherproject - swich the project
+oc projects - list all the projects available 
+
+## Documentation 
+
+```commandline
+oc explain
+```
+
 ## Common commands
 
 oc status
@@ -35,7 +48,7 @@ oc get pods // checar pods rodando
 oc rhs hello-world-po // Acesso shell a pod
 ```
 
-[pod_heello_world](images/img9.png)
+[pod_heello_world](../images/img9.png)
 
 Show all currently running Pods
 
@@ -351,17 +364,17 @@ metadata:
 ```
 
 Cheque se sua build esta rodando!
-[img.png](images/img.png)
+[img.png](../images/img.png)
 
 # Trigger Build
 
 Webhook - Tecnica de notificacao de eventos usando o requests http.
 Toda vez que alguma alteracao for feita, o git notifica e o openshift roda o deploy
 
-![img_1.png](images/img_1.png)
+![img_1.png](../images/img_1.png)
 Criar o link
 
-![img2.png](images/img2.png)
+![img2.png](../images/img2.png)
 
 Atencao se o github for local, tem que adicionar o regra no git local para aceitar conexao
 
@@ -371,16 +384,16 @@ Imagem Docker criada + codigo integrado
 Deployment pega a imagem criar junto com o codigo da aplicacao e publica no cluster
 Siga o exemplo:
 
-[deploy-configuratio](yaml-files/new-nginx-deploy-configuratio.yaml)
+[deploy-configuratio](../yaml-files/new-nginx-deploy-configuratio.yaml)
 
 Edite - copie - importe as configuracoes
-![img4.png](images/img4.png)
+![img4.png](../images/img4.png)
 
 # Openshift SDN
 
 Openshift utiliza o SND para prover e gerenciar as conexoes/comunicacao de rede das podes
 
-![img5.png](images/img5.png)
+![img5.png](../images/img5.png)
 
 Criando Virtual Networks - Overlay Network -> Default IP range - 10.128.0.0/14
 Todas as PODs nesses NODES - tem seu IP e Subrede
@@ -433,12 +446,12 @@ Banco de Dados Interno - Banco de Dados Externo - Service
 Cada Service tem seu IP e DNS
 Cada service tem seu Interno IP assinado- 172.17.0.7 - chamado de Cluster IP
 
-![img.png](images/img6.png)
+![img.png](../images/img6.png)
 
 Como o Service e lincado com a POD -> Usando selector
 Selector sao criados atraves do Docker deployment.
 "=nome-do-docker"
-![img.png](images/img7.png)
+![img.png](../images/img7.png)
 Tambem especifica a porta para escutar
 Service Porta
 E a porta para requiscao -- Target Port
@@ -464,11 +477,11 @@ Certificados e privados keys
 
 Split Traffic
 Permiti voce dividir o trafego em dois, supondo que voce tem um ambiente A e B.
-![img.png](images/img8.png)
+![img.png](../images/img8.png)
 
 # Expondo a aplicacao para os Usuario
 
-Criaremos um Service - como no exemplo [service-conf](yaml-files/new-nginx-service-configuration.yaml)
+Criaremos um Service - como no exemplo [service-conf](../yaml-files/new-nginx-service-configuration.yaml)
 
 ```yaml service
 apiVersion: v1
