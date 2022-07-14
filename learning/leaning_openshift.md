@@ -13,19 +13,25 @@ oc new-project myproject - to create a new project
 oc project otherproject - swich the project
 oc projects - list all the projects available 
 
-## Documentation 
+## Common commands
+
+oc status
+oc get pods - Show every pods running in a project
+
+oc rsh - connect inside the pod
+oc rsh podname-service-65-xpj72
+oc get pods --watch  - keeps watching the pods
+oc create -f pods/pod.yaml - from file
+oc delete pod/name
+oc delete pod/hello-world-pod 
+## Get Pod Documentation
 
 ```commandline
 oc explain
 ```
 
-## Common commands
 
-oc status
-
-# Get Pod Documentation
-
-# Get built-in documentation for Pods
+### Get built-in documentation for Pods
 
 oc explain pod
 
