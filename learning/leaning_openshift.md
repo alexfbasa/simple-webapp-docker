@@ -99,23 +99,14 @@ oc status - Para mostrar enderecos de IP e Portas internas
 In the shell, you can make a request to the service (because you are inside the OpenShift cluster)
 wget -qO- <service IP / Port>
 
-env - Mostrar as variaveis de uma POD
-wget -qO- $VARIABLE
+env                     -- Mostrar as variaveis de uma POD
 
 Use the environment variables with wget
+wget -qO- $VARIABLE     
 wget -qO- $HELLO_WORLD_POD_PORT_8080_TCP_ADDR:$HELLO_WORLD_POD_PORT_8080_TCP_PORT
 
 svc/hello-world-pod - 172.30.215.212:8080
 svc/hello-world-pod-2 - 172.30.133.110:8080
-
-Shell into Pods
-oc rsh will work with any Pod name from oc get pods
-
-oc rsh <pod name> {{pod - com porta exposta}}
-
-# In the shell, check the API on port 8080
-
-wget localhost:8080
 
 # Exposing a Route
 
@@ -124,6 +115,10 @@ Para criar suas proprias entrandas para exposicao externa suas aplicacoes
 oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
 oc status
 
+oc new-app pode ser usado para muitas coisas:
+oc new-app --help
+
+Criar aplicacoes pelo docker, buscar imagens, passar variaveis e parametros
 ```text
 svc/hello-world - 172.30.217.68:8080
   dc/hello-world deploys istag/hello-world:latest
@@ -229,73 +224,121 @@ Uma simples configuracao de deploymente eh normalmente uma analogia a um micro-s
 Pode suportar muitos diferente deploymentes, completa reinicializacao, customizacao de rolling updates,
 and completa customizacao de comportamento e tambem pre and post deploymente hooks.
 Um deploymente eh engatilhado quando uma configuracao, tag ou ImageStream eh mudada.
+- Deploy Images
+- Deploy from Git
+- Replication Controllers
+- Basic Configuration
 
-### Criar um deployment config vindo de uma inagem
+### Documentacao
+oc explain deploymentconfig.spec
 
 #### Deploy an existing image based on its tag
 
 oc new-app <image tag>
-
-#### Criando o template
-
 oc new-app quay.io/practicalopenshift/hello-world
-
-oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
 
 Criando um template nomeado
 Set the name using the --name flag
-
 oc new-app <image tag> --name <desired name>
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config --> Isso criara uma imagem de deploy
 
-oc new-app quay.io/practicalopenshift/hello-world --name demo-app
+### Delete deployment configs
+oc status
+oc get svc               --> check os resources rodando, mostra o IP interno e Portas
+oc get dc                --> mostra os deployment configs
+oc get istag             --> mostra as ImageStream
+oc delete                --> voce precisa do nome completo para deletar, use o oc status
+oc delete svc/hello-world
+oc delete dc/hello-world
+oc delete pod/hello-world
+Para checar 
+oc get dc/svc ou pod
 
-The specifier will match your desired name (dc/demo-app in this case)
+```text
+Veja a semelhanca, para criar o container no Docker
+```
+```commandline
+docker run -it quay.io/practicalopenshift/hello-world  {mesma imagem}
+```
+oc status   --> Ira mostrar todos os recursos rodando 
+oc get pods --> Checar as pods rodando
+oc get pods -o wide --> Checar IP da POD
+oc logs -f pod-name-d9thm container-name  INFORMA O NOME DO NO nome.interno.ab
 
-oc describe dc/demo-app
+oc describe pod/pod-name-294-cghzc -n cp-projeto   === MUITO UTIL
 
-Agora para rodar essa nova configuracao
+oc get route -n cp-project
 
-oc new-app quay.io/practicalopenshift/hello-world --name demo-app --as-deployment-config
-oc new-app quay.io/practicalopenshift/hello-world --name demo-app2 --as-deployment-config
+### Cleaning UP DeploymentConfig
+Use label selector para fazer o clean UP sem precisar deleter um recurso por vez
+** Recomendado para fazer clean UP depois de feito o test
+
+Crie uma novo deployment config -- linha 248
+Agora cheque a descricao dos servicos
+oc status                           --> pegar o nome correto do DC
+oc describe dc/hello-world          --> Ira descrever o DeploymentConfig check Labels:
+```text
+Labels:       deploymentconfig=hello-world
+```
+Agora delete
+
+```text
+$ oc delete all -l app=hello-world
+replicationcontroller "hello-world-1" deleted
+service "hello-world" deleted
+deploymentconfig.apps.openshift.io "hello-world" deleted
+route.route.openshift.io "hello-world" deleted
+
+oc status       --> Checar 
+```
+### Naming Deployments
+Criando por uma image existente {quay.io/practicalopenshift/hello-world -- imagem tag}
+
+oc new-app quay.io/practicalopenshift/hello-world --name my-demo-app --as-deployment-config
+oc status       --> Checar os recursos
+oc describe dc/my-demo-app
+oc new-app quay.io/practicalopenshift/hello-world --name my-second-demo-app --as-deployment-config
+oc delete all -l app=my-demo-app
+oc delete all -l app=my-second-demo-app
 
 [dois_deployments](/images/img12.png)
 
-oc delete all -l app=name demo-app
 
 Rodando container direto repositorio
 
-# Deploy from Git using oc new-app
+### Deploy from Git using oc new-app
+Estamos criando um DeploymentConfig por uma pre deploy build, agora vamos criar 
+pelo nosso repositorio e criar a nova POD
 
 oc new-app <git repo URL>
-
-# For this lesson
-
 oc new-app https://gitlab.com/practical-openshift/hello-world.git --as-deployment-config
 
-# Follow build progress
-
-oc logs -f bc/hello-world -- bc = build config -- mostrar os logs da construcao da imagem
-
-# Check status and pods
-
-oc status
+Verificar o progresso na construcao da Imagem e POD
+oc logs -f bc/hello-world -- bc = build config 
+oc status  --> checar o novo Deploy
 oc get pods
+oc describe dc/hello-world
+oc delete all -l app=hello-world
+
+### Replication controler
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
+oc get -o yaml dc/hello-world  --> Para ter o YAML do Deploy
+
 
 oc get -o yaml dc/hello-world - Checar o YAML da pod
 
 oc get rc -- checar replica das pods
 
 ## Rollou and Roolback version das aplicacoes
-
+Cria p deploy da POD
 oc new-app quay.io/practicalopenshift/hello-world -- iniciar a pod
 oc get pods --watch -- para monitorar
 
-# Roll out the latest version of the application
-
+Sem ter atualizado a imagem 
 oc rollout latest dc/hello-world
 
 # Roll back to the previous version of the application
-
+Caso voce tenha encontrado um erro e precisa voltar a versao anterior
 oc rollback dc/hello-world
 
 ##### Check running resources
@@ -308,27 +351,19 @@ oc status
 oc get pods
 [image_pod](/images/img10.png)
 
-oc get svc - service
-oc get dc - deploymente config
-oc get istag - ImageStream tag
+### Services
+Services prove acesso interno para conexao das pods
 
-Para apagar tem que usar o comando completo
+Crie duas pods para testar a conexao
+oc create -f pod/pod.yaml
+oc status                                  -- Pegar o IP interno da POD
+oc expose --port 8080 pod/hello-world-pod  -- Expose, expoe a porta da pod para conexao Interna
+oc create -f pod/pod2.yaml
+oc rsh pod/hello-world-2                   -- SSH na pod
+wget -qO- IP:PORTA_POD
 
-oc delete svc/hello-world - servico
-oc delete dc/hello-world
-oc delete istag/hello-world
+oc status 
 
-oc describe dc/hello-world
-
-Apagando tudo
-
-oc delete all -l app=hello-world
-
-## Services
-
-criar pod atraves de arquivo
-oc create -f pod.yaml
-oc expose --port 8080 pod/hello-world-pod
 
 Primeiro tem que criar a configuracao de build.
 A build construira a imagem e carregara o codigo dentro da imagem
@@ -547,9 +582,19 @@ Database            locahost        db-host.internal.com
 
 Creating ConfigMaps
 
-Create a ConfigMap using literal command line arguments
-oc create configmap message-map --from-literal MESSAGE="Hello From configMap"
-oc get configmap  -- mostra o config map criado
+Voce pode criar um ConfigMap usando:
+- Argumentos e linhas de comando
+- Arquivos com valores de chaves - Nao armazene dados sensiveis no ConfigMap use Secret
+- Diretorios e arquivos.
+-- LAB
+```commandline
+$ oc get configmap --- get all the configMaps
+$ oc get -o yaml cm/message-map    -- cm = configmap
+
+```
+oc create {type=configmap} {name_resource=message-map} --from-literal MESSAGE="Hello From configMap"
+oc create configmap <configmap-name> --from-literal KEY="VALUE"
+oc get configmap  -- mostra o config map criado  -- 
 oc get -o yaml cm/message-map
 ```text
 apiVersion: v1
@@ -564,31 +609,27 @@ metadata:
   selfLink: /api/v1/namespaces/myproject/configmaps/message-map
   uid: b2ccc62d-fd15-11ec-9ac2-0800277dfd8f
 ```
+-- LAB - Alterando o configMap por um mapa ja criado
+Tenha o mapa da mensagem criado 
+$ oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config   -- criar um app e pod
+$ oc expose svc/hello-world                                                  -- criar rota para acesso externo
+$ oc status                                                                  -- checar URL
+```text
+In project My Project (myproject) on server https://192.168.99.125:8443
 
-oc create configmap <configmap-name> --from-literal KEY="VALUE"
+http://hello-world-myproject.192.168.99.125.nip.io to pod port 8080-tcp (svc/hello-world)
 
-Create from a file
-oc create configmap <configmap-name> --from-file=MESSAGE.txt
+```
+curl IP
 
-Verify
-oc get -o yaml configmap/<configmap-name>
+$ curl http://hello-world-myproject.192.168.99.125.nip.io
+Welcome! You can change this message by editing the MESSAGE environment variable -- Valor veio da Imagem
 
+Agora comsumir um configMap do que ja foi criado
 
-Create from a file with a key override
-oc create configmap <configmap-name> --from-file=MESSAGE=MESSAGE.txt
-
-Same --from-file but with a directory
-oc create configmap <configmap-name> --from-file pods
-
-Consuming ConfigMaps as Environment Variables
-
-Set environment variables (same for all types of ConfigMap)
-oc set env dc/hello-world --from cm/<configmap-name>
-oc set env dc/hello-world --from cm/message-map
-curl http://hello-world-myproject.192.168.99.123.nip.io
-Hello From configMap
-
-oc get -o yaml dc/hello-world  // pegar o deployment configuratio
+$ oc set env dc/hello-world --from cm/message-map  -- Isso defini env criado no mapa anterior dentro da imagem hello-world
+$ curl http://hello-world-myproject.192.168.99.125.nip.io  -- Messagem foi alterado por o que vc criou
+$ oc get -o yaml dc/hello-world  // pegar o deployment configuracao
 ```text
   - env:
         - name: MESSAGE
@@ -598,10 +639,11 @@ oc get -o yaml dc/hello-world  // pegar o deployment configuratio
               name: message-map  --> Qual o configmap usado
 
 ```
+-- LAB - Carregar configMap por um arquivo 
 ```commandline
 echo "Hello from configMap file" > MESSAGE.txt
 oc create configmap file-map --from-file=MESSAGE.txt
-configmap/file-map created
+---> configmap/file-map created
 oc get -o yaml configmap/file-map
 ```
 ```text

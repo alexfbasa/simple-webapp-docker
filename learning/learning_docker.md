@@ -8,3 +8,8 @@
 # LABEL - Openshift picks up this label and creates a services
 ```
 [container_definition](/images/img_2.png)
+
+Rodando um container de teste
+docker run -it quay.io/practicalopenshift/hello-world
+
+Esse container vai travar a sessao
