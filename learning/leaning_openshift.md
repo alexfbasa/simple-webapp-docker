@@ -649,7 +649,7 @@ oc get -o yaml configmap/file-map
 ```text
 apiVersion: v1                                              
 data:                                                       
-  MESSAGE.txt: |                --> WRONG KEY VALUE                                        
+  MESSAGE.txt: |                --> WRONG KEY VALUE  -- Pegou o nome do arquivo como chave                                      
     Hello from configMap file   --> MESSAGE                            
 kind: ConfigMap                                             
 metadata:                                                   
