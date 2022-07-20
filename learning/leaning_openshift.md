@@ -926,3 +926,135 @@ oc new-app quay.io/$REGISTRY_USERNAME/private-repo
 oc expose service/private-repo
 oc status -- checar route
 curl IP
+
+## Builds 
+Build a Imagem - igual ao comando Docker Build 
+
+-- LAB - Buildando nova imagem
+$oc new-build https://gitlab.com/practical-openshift/hello-world.git
+$oc get -o yaml buildconfig/hello-world
+$oc get builds
+$oc get pods    -- Builds rodam Pods tambem
+
+-- LAB - Chegando log das Builds
+$oc get build     -- checa a lista de builds
+$oc logs -f build/hello-world-1
+$oc get buildconfig
+$oc logs -f buildconfig/hello-world 
+
+-- LAB - Start builds manualmente por uma build config existente
+$oc get pods --watch
+$oc start-build bc/hello-world
+$oc describe is/hello-world
+
+-- lAB - Cancelar a build manualmente
+$oc get pods --watch
+$oc start-build bc/hello-world
+$oc cancel-build bc/hello-world
+
+## Build Webhooks
+Openshift - Expoe HTTPS endpoints que iniciam a build quando sao chamados
+Git Repoistory - Chamam o endpoint quando o dev push o codigo
+
+\o/ Dev --> Push cod --> Git Repo --> HTTP --> Webhook listener --> Trigger --> BuildConfig --> Create --> Build
+
+-- LAB - Configurando o Webhook
+$oc get -o yaml buildconfig/hello-world
+```text
+    type: GitHub
+  - generic:
+      secret: w1akkDcyoiym2C1Ocjj2
+```
+$export GENERIC_SECRET={{Secret}}
+$echo $GENERIC_SECRET
+$oc describe bc/hello-world
+```text
+Webhook Generic:
+        URL:            https://192.168.99.125:8443/apis/build.openshi
+ft.io/v1/namespaces/myproject/buildconfigs/hello-world/webhooks/<secre
+t>/generic
+```
+$curl -X POST -k URL  --> Curl ira dispara a build
+$curl -X POST -k https://192.168.99.125:8443/apis/build.openshift.io/v1/namespaces/myproject/buildconfigs/hello-world/webhooks/$GENERIC_SECRET/generic
+$oc get pods --watch
+
+## Building Branches
+-- LAB - 
+
+$oc new-build https://gitlab.com/practical-openshift/hello-world.git#update-message
+$oc logs -f bc/hello-world
+
+## Buiding Subdirectorios
+Quando o repositorio possue multiplos projetos
+-- LAB -
+$oc get pods --watch
+$oc new-build https://gitlab.com/practical-openshift/labs.git --context-dir hello-world-go
+$oc logs bc/labs
+
+-- LAB -- 
+$oc new-build https://gitlab.com/practical-openshift/hello-world.git
+oc status
+oc set build-hook bc/hello-world --post-commit --script="echo Hello from build hook"
+oc describe dc/hello-world
+oc get pods --watch
+```text
+Post Commit Hook:       ["/bin/sh", "-ic", "echo Hello from build hook
+"]
+```
+oc start-build bc/hello-world
+oc logs -f buildconfig/hello-world
+```text
+Running post commit hook ...
+Hello from build hook
+```
+oc set build-hook bc/hello-world --post-commit --script="exit 1"
+oc start-build bc/hello-world
+oc logs -f buildconfig/hello-world
+
+removendo a build que falha
+oc set build-hook bc/hello-world --post-commit --remove
+oc describe bc/hello-world
+
+## Source-to-Image Builds
+S2i transforma o codigo fonte da sua aplicacao em container image
+Basic S2I Script
+Dockerfile Instruction      S2I Script
+RUN   <-------------------> Assemble
+CMD   <-------------------> RUN
+-- LAB - Buildando usando S2I
+$cd labs/s2i/ruby 
+Nao existe Dockerfile
+oc new-app labs --context-dir s2i/ruby --as-deployment-config
+oc logs bc/labs
+oc get pods
+oc status
+oc expose svc/labs
+oc get route
+curl IP
+
+## S2I Auto-deteccao
+Como Openshift sabe?
+QUando vc start a build Openshift procuro por um Dockerfile
+```text
+Start ---> Dockerfile? --YES--> Docker Strategy
+               |
+               NO
+       Try to Source Strategy     
+```
+Source Strategy -- Tenta associar essa imagem por auto-deteccao
+![img_s2i_strategy.png](../images/img14.png)
+
+Em nosso caso ele detectou o config.ru e Gemfile
+
+## Explicit Builder Image
+-- LAB
+oc delete all --all
+oc new-app ruby~labs --context-dir s2i/ruby --as-deployment-config  -- LOCAL
+oc new-app ruby~https://gitlab.com/practical-openshift/labs.git --context-dir s2i/ruby --as-deployment-config
+oc logs bc/labs
+oc delete all --all
+
+Rodando errada build
+oc new-app python~labs --context-dir s2i/ruby --as-deployment-config
+oc new-app python~https://gitlab.com/practical-openshift/labs.git --context-dir s2i/ruby --as-deployment-config
+oc logs bc/labs
