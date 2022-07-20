@@ -11,7 +11,7 @@ Openshift uses Projects
 oc project - check with project you are using
 oc new-project myproject - to create a new project
 oc project otherproject - swich the project
-oc projects - list all the projects available 
+oc projects - list all the projects available
 
 ## Common commands
 
@@ -20,16 +20,16 @@ oc get pods - Show every pods running in a project
 
 oc rsh - connect inside the pod
 oc rsh podname-service-65-xpj72
-oc get pods --watch  - keeps watching the pods
+oc get pods --watch - keeps watching the pods
 oc create -f pods/pod.yaml - from file
 oc delete pod/name
-oc delete pod/hello-world-pod 
+oc delete pod/hello-world-pod
+
 ## Get Pod Documentation
 
 ```commandline
 oc explain
 ```
-
 
 ### Get built-in documentation for Pods
 
@@ -99,7 +99,7 @@ oc status - Para mostrar enderecos de IP e Portas internas
 In the shell, you can make a request to the service (because you are inside the OpenShift cluster)
 wget -qO- <service IP / Port>
 
-env                     -- Mostrar as variaveis de uma POD
+env -- Mostrar as variaveis de uma POD
 
 Use the environment variables with wget
 wget -qO- $VARIABLE     
@@ -119,6 +119,7 @@ oc new-app pode ser usado para muitas coisas:
 oc new-app --help
 
 Criar aplicacoes pelo docker, buscar imagens, passar variaveis e parametros
+
 ```text
 svc/hello-world - 172.30.217.68:8080
   dc/hello-world deploys istag/hello-world:latest
@@ -149,11 +150,13 @@ Welcome! You can change this message by editing the MESSAGE environment variable
 oc get -o yaml route
 
 "" Usar para pegar as rotas do servidor ""
+
 ```text
   spec:
     host: hello-world-myproject.192.168.99.123.nip.io  -- DNS Externo
     port:
 ```
+
 oc get -o yaml service
 oc get -o yaml pod/hello-world-pod
 
@@ -224,12 +227,14 @@ Uma simples configuracao de deploymente eh normalmente uma analogia a um micro-s
 Pode suportar muitos diferente deploymentes, completa reinicializacao, customizacao de rolling updates,
 and completa customizacao de comportamento e tambem pre and post deploymente hooks.
 Um deploymente eh engatilhado quando uma configuracao, tag ou ImageStream eh mudada.
+
 - Deploy Images
 - Deploy from Git
 - Replication Controllers
 - Basic Configuration
 
 ### Documentacao
+
 oc explain deploymentconfig.spec
 
 #### Deploy an existing image based on its tag
@@ -243,43 +248,49 @@ oc new-app <image tag> --name <desired name>
 oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config --> Isso criara uma imagem de deploy
 
 ### Delete deployment configs
+
 oc status
-oc get svc               --> check os resources rodando, mostra o IP interno e Portas
-oc get dc                --> mostra os deployment configs
-oc get istag             --> mostra as ImageStream
-oc delete                --> voce precisa do nome completo para deletar, use o oc status
+oc get svc --> check os resources rodando, mostra o IP interno e Portas
+oc get dc --> mostra os deployment configs
+oc get istag --> mostra as ImageStream
+oc delete --> voce precisa do nome completo para deletar, use o oc status
 oc delete svc/hello-world
 oc delete dc/hello-world
 oc delete pod/hello-world
-Para checar 
+Para checar
 oc get dc/svc ou pod
 
 ```text
 Veja a semelhanca, para criar o container no Docker
 ```
+
 ```commandline
 docker run -it quay.io/practicalopenshift/hello-world  {mesma imagem}
 ```
-oc status   --> Ira mostrar todos os recursos rodando 
+
+oc status --> Ira mostrar todos os recursos rodando
 oc get pods --> Checar as pods rodando
 oc get pods -o wide --> Checar IP da POD
-oc logs -f pod-name-d9thm container-name  INFORMA O NOME DO NO nome.interno.ab
+oc logs -f pod-name-d9thm container-name INFORMA O NOME DO NO nome.interno.ab
 
-oc describe pod/pod-name-294-cghzc -n cp-projeto   === MUITO UTIL
+oc describe pod/pod-name-294-cghzc -n cp-projeto === MUITO UTIL
 
 oc get route -n cp-project
 
 ### Cleaning UP DeploymentConfig
+
 Use label selector para fazer o clean UP sem precisar deleter um recurso por vez
 ** Recomendado para fazer clean UP depois de feito o test
 
 Crie uma novo deployment config -- linha 248
 Agora cheque a descricao dos servicos
-oc status                           --> pegar o nome correto do DC
-oc describe dc/hello-world          --> Ira descrever o DeploymentConfig check Labels:
+oc status --> pegar o nome correto do DC
+oc describe dc/hello-world --> Ira descrever o DeploymentConfig check Labels:
+
 ```text
 Labels:       deploymentconfig=hello-world
 ```
+
 Agora delete
 
 ```text
@@ -291,11 +302,13 @@ route.route.openshift.io "hello-world" deleted
 
 oc status       --> Checar 
 ```
+
 ### Naming Deployments
+
 Criando por uma image existente {quay.io/practicalopenshift/hello-world -- imagem tag}
 
 oc new-app quay.io/practicalopenshift/hello-world --name my-demo-app --as-deployment-config
-oc status       --> Checar os recursos
+oc status --> Checar os recursos
 oc describe dc/my-demo-app
 oc new-app quay.io/practicalopenshift/hello-world --name my-second-demo-app --as-deployment-config
 oc delete all -l app=my-demo-app
@@ -303,41 +316,43 @@ oc delete all -l app=my-second-demo-app
 
 [dois_deployments](/images/img12.png)
 
-
 Rodando container direto repositorio
 
 ### Deploy from Git using oc new-app
-Estamos criando um DeploymentConfig por uma pre deploy build, agora vamos criar 
+
+Estamos criando um DeploymentConfig por uma pre deploy build, agora vamos criar
 pelo nosso repositorio e criar a nova POD
 
 oc new-app <git repo URL>
 oc new-app https://gitlab.com/practical-openshift/hello-world.git --as-deployment-config
 
 Verificar o progresso na construcao da Imagem e POD
-oc logs -f bc/hello-world -- bc = build config 
-oc status  --> checar o novo Deploy
+oc logs -f bc/hello-world -- bc = build config
+oc status --> checar o novo Deploy
 oc get pods
 oc describe dc/hello-world
 oc delete all -l app=hello-world
 
 ### Replication controler
-oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
-oc get -o yaml dc/hello-world  --> Para ter o YAML do Deploy
 
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config
+oc get -o yaml dc/hello-world --> Para ter o YAML do Deploy
 
 oc get -o yaml dc/hello-world - Checar o YAML da pod
 
 oc get rc -- checar replica das pods
 
 ## Rollou and Roolback version das aplicacoes
+
 Cria p deploy da POD
 oc new-app quay.io/practicalopenshift/hello-world -- iniciar a pod
 oc get pods --watch -- para monitorar
 
-Sem ter atualizado a imagem 
+Sem ter atualizado a imagem
 oc rollout latest dc/hello-world
 
 # Roll back to the previous version of the application
+
 Caso voce tenha encontrado um erro e precisa voltar a versao anterior
 oc rollback dc/hello-world
 
@@ -352,18 +367,18 @@ oc get pods
 [image_pod](/images/img10.png)
 
 ### Services
+
 Services prove acesso interno para conexao das pods
 
 Crie duas pods para testar a conexao
 oc create -f pod/pod.yaml
-oc status                                  -- Pegar o IP interno da POD
-oc expose --port 8080 pod/hello-world-pod  -- Expose, expoe a porta da pod para conexao Interna
+oc status -- Pegar o IP interno da POD
+oc expose --port 8080 pod/hello-world-pod -- Expose, expoe a porta da pod para conexao Interna
 oc create -f pod/pod2.yaml
-oc rsh pod/hello-world-2                   -- SSH na pod
+oc rsh pod/hello-world-2 -- SSH na pod
 wget -qO- IP:PORTA_POD
 
-oc status 
-
+oc status
 
 Primeiro tem que criar a configuracao de build.
 A build construira a imagem e carregara o codigo dentro da imagem
@@ -571,8 +586,10 @@ metadata:
 ```
 
 ## ConfigMap
-Quando voce deploy sua aplicacao em diferente ambientes 
+
+Quando voce deploy sua aplicacao em diferente ambientes
 Para ambiente local voce deveria usar
+
 ```text
                  Environments
                     Development     Production
@@ -583,19 +600,23 @@ Database            locahost        db-host.internal.com
 Creating ConfigMaps
 
 Voce pode criar um ConfigMap usando:
+
 - Argumentos e linhas de comando
 - Arquivos com valores de chaves - Nao armazene dados sensiveis no ConfigMap use Secret
 - Diretorios e arquivos.
--- LAB
+  -- LAB
+
 ```commandline
 $ oc get configmap --- get all the configMaps
 $ oc get -o yaml cm/message-map    -- cm = configmap
 
 ```
+
 oc create {type=configmap} {name_resource=message-map} --from-literal MESSAGE="Hello From configMap"
 oc create configmap <configmap-name> --from-literal KEY="VALUE"
-oc get configmap  -- mostra o config map criado  -- 
+oc get configmap -- mostra o config map criado --
 oc get -o yaml cm/message-map
+
 ```text
 apiVersion: v1
 data:
@@ -609,17 +630,20 @@ metadata:
   selfLink: /api/v1/namespaces/myproject/configmaps/message-map
   uid: b2ccc62d-fd15-11ec-9ac2-0800277dfd8f
 ```
+
 -- LAB - Alterando o configMap por um mapa ja criado
-Tenha o mapa da mensagem criado 
-$ oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config   -- criar um app e pod
-$ oc expose svc/hello-world                                                  -- criar rota para acesso externo
-$ oc status                                                                  -- checar URL
+Tenha o mapa da mensagem criado
+$ oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config -- criar um app e pod
+$ oc expose svc/hello-world -- criar rota para acesso externo
+$ oc status -- checar URL
+
 ```text
 In project My Project (myproject) on server https://192.168.99.125:8443
 
 http://hello-world-myproject.192.168.99.125.nip.io to pod port 8080-tcp (svc/hello-world)
 
 ```
+
 curl IP
 
 $ curl http://hello-world-myproject.192.168.99.125.nip.io
@@ -627,9 +651,11 @@ Welcome! You can change this message by editing the MESSAGE environment variable
 
 Agora comsumir um configMap do que ja foi criado
 
-$ oc set env dc/hello-world --from cm/message-map  -- Isso defini env criado no mapa anterior dentro da imagem hello-world
+$ oc set env dc/hello-world --from cm/message-map -- Isso defini env criado no mapa anterior dentro da imagem
+hello-world
 $ curl http://hello-world-myproject.192.168.99.125.nip.io  -- Messagem foi alterado por o que vc criou
-$ oc get -o yaml dc/hello-world  // pegar o deployment configuracao
+$ oc get -o yaml dc/hello-world // pegar o deployment configuracao
+
 ```text
   - env:
         - name: MESSAGE
@@ -639,13 +665,16 @@ $ oc get -o yaml dc/hello-world  // pegar o deployment configuracao
               name: message-map  --> Qual o configmap usado
 
 ```
--- LAB - Carregar configMap por um arquivo 
+
+-- LAB - Carregar configMap por um arquivo
+
 ```commandline
 echo "Hello from configMap file" > MESSAGE.txt
 oc create configmap file-map --from-file=MESSAGE.txt
 ---> configmap/file-map created
 oc get -o yaml configmap/file-map
 ```
+
 ```text
 apiVersion: v1                                              
 data:                                                       
@@ -660,9 +689,13 @@ metadata:
   selfLink: /api/v1/namespaces/myproject/configmaps/file-map
   uid: 1bd72e17-fd78-11ec-9ac2-0800277dfd8f  
 ```
+
+Passar um nome customizado para a chave
+
 ```commandline
 oc create configmap file-map-2 --from-file=MESSAGE=MESSAGE.txt
 ```
+
 ```text
 apiVersion: v1
 data:
@@ -678,11 +711,16 @@ metadata:
   uid: b09e2aa2-fd78-11ec-9ac2-0800277dfd8f
 
 ```
+
+Definir essa novo mapa para a imagem Hello-World
+
 ```commandline
 oc set env dc/hello-world --from cm/file-map-2
 oc status  --> Pegar endereco da rota e acessar a pagina
+curl IP
 ```
-Criando configmap por diretorio 
+
+-- LAB - Criando configmap por diretorio
 
 ```commandline
 cd labs
@@ -691,7 +729,9 @@ oc get -o yaml configmap/pods-example
 ```
 
 ## Secrets
+
 Armazenar privada informacoes
+
 - Credenciais
 - Certificados
 - Keys
@@ -699,40 +739,52 @@ Armazenar privada informacoes
 - Autorizacao
 - Seguraca
 
-Creating Secrets
+-- LAB - Creating Secrets
 
-Create a simple generic (Opaque) Secret
+Criar uma simples generic (Opaque) Secret - nao tem restricoes, pode ter qualquer valor
+
+oc get secret -- Checar todos os secrets creados
+oc create secret generic message-secret --from-literal MESSAGE="Secret Message"
 oc create secret generic <secret-name> --from-literal KEY="VALUE"
-
-Check the Secret
 oc get -o yaml secret/<secret-name>
 
+```text
+apiVersion: v1
+data:
+  MESSAGE: U2VjcmV0IE1lc3NhZ2U=     -- Secret nao eh encriptacao
+kind: Secret
+metadata:
+
+```
 
 Consume the Secret as Environment Variables
+Tenha a POD hello-world rodando com --as-deployment-config
+Tenha ela exposta para acesso externo
 
 Almost the same as ConfigMaps
 oc set env dc/<dc-name> --from secret/<secret-name>
-
-Create a simple generic (Opaque) secret
-oc create secret generic message-secret --from-literal MESSAGE="Secret Message"
-
+oc set env dc/hello-world --from secret/message-secret
+curl IP
 Check the existing Secrets
 oc get secret
 
 Check our new Secret
 oc get -o yaml secret/message-secret
-
+oc get -o yaml dc/hello-world
 
 oc create: ConfigMap vs. Secret
+
 ```text
                       Kind                      Name
 ConfigMap = oc create configmap                 message-map --from-literal MESSAGE="Hello From ConfigMap"
                       Kind   Type of Secret     Name
 Secret    = oc create secret    generic         message-secret --from-literal MESSAGE="Secret Text"
 ```
+
 ```commandline
 oc get -o yaml secret/message-secret
 ```
+
 ```text
 apiVersion: v1
 data:
@@ -750,62 +802,85 @@ type: Opaque
 
 ## ImageStreams
 
-List ImageStreams
+ImagenStream - correspondem a nomes como Hello-World ou Goland
+ImagenStreamTag - sao as correspondencia de versoes das imagens
+
+ImagenStream prover similar funcionalidade para build docker registry
+rodando em sua maquina local.
+Image Story dentro do Openshift por que outro typos de recursos podem estar assistindo
+ou inscritos nas ImagenStream ou ImageStreanTag para receber notificacoes eles pode agir quando
+novas imagem se tornam disponiveis.
+Voce pode configurar seu DeploymentConfig para deployar automaticamente a nova versao da imagem
+por tag
+
+-- LAB - criando ImagenStream
+Tenha a POD hello-world rodando com --as-deployment-config
+
+```text
+--> Creating resources ...
+    imagestream.image.openshift.io "hello-world" created
+    deploymentconfig.apps.openshift.io "hello-world" created
+```
+
+oc get is --- Para pegar mais informacoes
+oc get imagestream
+
+```text
+NAME          DOCKER REPO                             TAGS     UPDATED
+hello-world   172.30.1.1:5000/myproject/hello-world   latest   About a minute ago
+
+```
+
+oc get imagestreamtag -- mostra o nome completo da TAG
+oc get istag
+
+-- LAB - Criando ImageStreams
+Ate agora estamos criando image com o $ oc new-app
+$oc import image -- Permite criar a ImagenStream and DeploymentConfig ou qualquer resorce tap
+
+Verifique se nao existem nenhuma imagem rodando
+$oc get is
+Delete ImageStreams
+$oc delete is/hello-world    
+$oc get is
+```text
+No resources found in myproject namespace.
+```
+Crie ImageStreams mas nao depolya ainda.
+
+oc import-image --confirm <image tag>
+ex:                       {{Mesma imagem que estamos usando}}
+oc import-image --confirm quay.io/practicalopenshift/hello-world 
+Checar detalhes
+oc get istag
+
+Descrever uma image especifica   -- Muito util
+oc describe istag/hello-world:latest
+Rodando a Imagem Importada
+oc new-app projectName/ImageName --as-deployment-config
+oc new-app myproject/hello-world --as-deployment-config
 oc get is
 
-Delete ImageStreams
-oc delete is/hello-world
-
-Create ImageStreams
-
-Create the ImageStream (but don't deploy yet)
-oc import-image --confirm <image tag>
-
-Example with this course's image
-oc import-image --confirm quay.io/practicalopenshift/hello-world
-
-Importing any new images
-oc import-image --confirm quay.io/practicalopenshift/hello-world
-
-
-Importing extra ImageStreamTags for an existing ImageStream
-
-oc tag syntax
-oc tag <original> <destination>
+-- LAB - Importando extra ImageStreamTags para uma existente  ImageStream
+Tenha uma imagen imprtada e rodando 
+oc get is   -- Para checar
+oc tag <original> <destino>
 
 Example
 oc tag quay.io/image-name:tag image-name:tag
-
+$oc tag quay.io/practicalopenshift/hello-world:update-message hello-world:update-message
+$oc get istag      -- Checar nova tag
 Check the current ImageStreams and ImageStreamTags
 
-List tags
-oc get istag
-
-
-Use the ImageStream with oc new-app
-
-Deploy an application based on your new ImageStream
-oc new-app myproject/hello-world
-
-oc tag syntax
-oc tag <original> <destination>
-
-Example
-oc tag quay.io/image-name:tag image-name:tag
-
-This lesson
-oc tag quay.io/practicalopenshift/hello-world:update-message hello-world:update-message
-
-Check your ImageStreams
-oc get is
-
-Check your ImageStreamTags
-oc get istag
 
 ## Importando imagens privadas para o projeto
-echo $REGISTRY_USERNAME
-source credentials.env  --> popular as variaveis
+Estamos rodando imagen publicas sem autenticacao
 
+echo $REGISTRY_USERNAME
+cd labs
+source credentials.env --> popular as variaveis 
+cd hello-world-go-private
+echo $REGISTRY_USERNAME
 Remote Tag syntax
 <host name>/<your username>/<image name>
 
@@ -815,7 +890,7 @@ source credentials.env
 Building an image with a remote tag
 docker build -t quay.io/$REGISTRY_USERNAME/private-repo .
 
-Enviando a imagem para o repositorio 
+Enviando a imagem para o repositorio
 Log into a registry
 docker login <hostname>
 
@@ -828,19 +903,12 @@ docker push <remote tag>
 Push the image to Quay
 docker push quay.io/$REGISTRY_USERNAME/private-repo
 
+-- LAB - Usando a imagem privada
 The command to import the private image (won't work without extra auth steps)
-oc new-app quay.io/$REGISTRY_USERNAME/private-repo
+oc new-app quay.io/$REGISTRY_USERNAME/private-repo --as-deployment-config
 
-You may need to run this command
+# You may need to run this command
 source credentials.env
-
-Create a Docker registry secret
-oc secrets link default demo-image-pull-secret --for=pull   --> First  Maybe
-
-oc describe serviceaccount/default
-
-The same image from the start should work now
-oc new-app quay.io/$REGISTRY_USERNAME/private-repo
 
 oc create secret docker-registry \
 demo-image-pull-secret \
@@ -849,13 +917,12 @@ demo-image-pull-secret \
 --docker-password=$REGISTRY_PASSWORD \
 --docker-email=$REGISTRY_EMAIL
 
-A touch of secrets magic
-This command links the secret to the service account named "default"
-oc secrets link default demo-image-pull-secret --for=pull
-
-Check that the service account has the secret associated
+Create a Docker registry secret
+oc secrets link default demo-image-pull-secret --for=pull 
 oc describe serviceaccount/default
 
-
-
-
+The same image from the start should work now
+oc new-app quay.io/$REGISTRY_USERNAME/private-repo
+oc expose service/private-repo
+oc status -- checar route
+curl IP
