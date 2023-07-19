@@ -1,12 +1,9 @@
-FROM nginx:1.17.4
+FROM ubuntu:20.04
 
-EXPOSE 8081
+RUN apt-get update && apt-get install -y python3 python3-pip
 
-USER root
+RUN pip install flask 
 
-# support running as arbitrary user which belongs to the root group
-RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx && \
-    addgroup nginx root
+COPY app.py /opt/
 
-COPY /ngnix/nginx.conf                 /etc/nginx/
-COPY /ngnix/conf.d/                    /etc/nginx/conf.d/
+ENTRYPOINT FLASK_APP=/opt/app.py flask run --host=0.0.0.0 --port=8080
